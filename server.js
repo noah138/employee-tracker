@@ -33,7 +33,8 @@ function start() {
             'View All Departments',
             'Add Department',
             'Delete Department',
-            // 'Quit'
+            'View Department Budgets',
+            'Quit'
         ]
     }).then((answer) => {
         console.log(answer);
@@ -58,8 +59,10 @@ function start() {
                 return addDepartment();
             case 'Delete Department':
                 return deleteDepartment();
-            // case 'Quit':
-            //     return quit();
+            case 'View Department Budgets':
+                return viewBudget();
+            case 'Quit':
+                return quit();
         }
     })
 }
@@ -86,6 +89,80 @@ function viewAllEmployees() {
         if (err) throw err;
         console.table(data);
         start();
+    })
+}
+
+//  THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+function viewAllRoles() {
+    const sql = `SELECT
+            roles.title,
+            roles.id,
+            departments.name AS "department",
+            roles.salary
+        FROM roles
+        LEFT JOIN departments
+        ON roles.department_id = departments.id`
+
+    db.query(sql, function (err, data) {
+        if (err) throw err;
+        console.table(data);
+        start();
+    })
+}
+
+// THEN I am presented with a formatted table showing department names and department ids
+function viewAllDeparments() {
+    const sql = `SELECT * FROM departments`
+
+    db.query(sql, function (err, data) {
+        if (err) throw err;
+        console.table(data);
+        start();
+    })
+}
+
+// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+function updateEmployeeRole() {
+    db.query('SELECT * FROM employees', function (err, results) {
+        const employeeArr = results.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            }
+        })
+
+        db.query('SELECT * FROM roles', function (err, results) {
+            const roleArr = results.map((role) => {
+                return {
+                    name: role.title,
+                    value: role.id,
+                }
+            })
+        
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: `Which employee's role needs to be updated?`,
+                    choices: employeeArr
+                },
+                {
+                    type: 'list',
+                    name: 'newRole',
+                    message: `What is the employee's new role?`,
+                    choices: roleArr
+                },               
+            ]).then((response) => {
+                const sql = `UPDATE employees
+                SET role_id = ?
+                WHERE id = ?`;
+                
+                db.query(sql, [response.newRole, response.employee],function (err, data) {
+                    console.log(`Role has been successfully updated!`);
+                    start();
+                })
+            })
+        })
     })
 }
 
@@ -155,69 +232,6 @@ function addEmployee() {
     
 }
 
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
-function updateEmployeeRole() {
-    db.query('SELECT * FROM employees', function (err, results) {
-        const employeeArr = results.map((employee) => {
-            return {
-                name: `${employee.first_name} ${employee.last_name}`,
-                value: employee.id,
-            }
-        })
-
-        db.query('SELECT * FROM roles', function (err, results) {
-            const roleArr = results.map((role) => {
-                return {
-                    name: role.title,
-                    value: role.id,
-                }
-            })
-        
-            inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'employee',
-                    message: `Which employee's role needs to be updated?`,
-                    choices: employeeArr
-                },
-                {
-                    type: 'list',
-                    name: 'newRole',
-                    message: `What is the employee's new role?`,
-                    choices: roleArr
-                },               
-            ]).then((response) => {
-                const sql = `UPDATE employees
-                SET role_id = ?
-                WHERE id = ?`;
-                
-                db.query(sql, [response.newRole, response.employee],function (err, data) {
-                    console.log(`Role has been successfully updated!`);
-                    start();
-                })
-            })
-        })
-    })
-}
-
-//  THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-function viewAllRoles() {
-    sql = `SELECT
-            roles.title,
-            roles.id,
-            departments.name AS "department",
-            roles.salary
-        FROM roles
-        LEFT JOIN departments
-        ON roles.department_id = departments.id`
-
-    db.query(sql, function (err, data) {
-        if (err) throw err;
-        console.table(data);
-        start();
-    })
-}
-
 // THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 function addRole() {
     db.query('SELECT * FROM departments', function (err, results) {
@@ -259,17 +273,6 @@ function addRole() {
     })
 }
 
-// THEN I am presented with a formatted table showing department names and department ids
-function viewAllDeparments() {
-    const sql = `SELECT * FROM departments`
-
-    db.query(sql, function (err, data) {
-        if (err) throw err;
-        console.table(data);
-        start();
-    })
-}
-
 // THEN I am prompted to enter the name of the department and that department is added to the database
 function addDepartment() {
     inquirer.prompt([
@@ -280,7 +283,7 @@ function addDepartment() {
         }
     ]).then((answer) => {
         sql = `INSERT INTO departments (name)
-        VALUES (?)`;
+               VALUES (?)`;
 
         db.query(sql, answer.department, function(err, data) {
             if (err) throw err;
@@ -370,6 +373,22 @@ function deleteDepartment() {
     })
 }
 
-// function quit() {
+function viewBudget() {
+    const sql = `SELECT
+                    departments.name AS "department",
+                    SUM(salary) AS "budget"
+                FROM roles
+                JOIN departments ON roles.department_id = departments.id
+                GROUP BY department_id`
+    
+    db.query(sql, function(err, data) {
+        if (err) throw err;
+        console.table(data);
+        start();
+    })
+}
 
-// }
+function quit() {
+    console.log("See you later!")
+    db.end()
+}
