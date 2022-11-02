@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+const consoleTable = require('console.table');
 
 const PORT = process.env.PORT || 3000;
 const app = require("express");
@@ -67,22 +68,22 @@ function start() {
 function viewAllEmployees() {
     const sql = `SELECT
                     employees.id,
-                    employees.first_name,
-                    employees.last_name,
+                    employees.first_name AS "first name",
+                    employees.last_name AS "last name",
                     roles.title,
-                    departments.name,
-                    roles.salary
+                    departments.name AS "department",
+                    roles.salary,
                     CONCAT (manager.first_name, " ", manager.last_name) AS manager
                 FROM employees
                 LEFT JOIN roles
                 ON employees.role_id = roles.id
                 LEFT JOIN departments
                 ON roles.department_id = departments.id
-                LEFT JOIN employee AS manager
-                ON employees.manager_id = manager.id
-    `;
+                LEFT JOIN employees AS manager
+                ON employees.manager_id = manager.id`
 
     db.query(sql, function (err, data) {
+        if (err) throw err;
         console.table(data);
         start();
     })
@@ -91,6 +92,7 @@ function viewAllEmployees() {
 // THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 function addEmployee() {
     db.query('SELECT * FROM roles', function (err, results) {
+        if (err) throw err;
         const roleArr = results.map((role) => {
             return {
                 name: role.title,
@@ -99,13 +101,14 @@ function addEmployee() {
         })
 
     db.query('SELECT * FROM employees', function (err, results) {
-        const employeeArr = results.map((employee) => {
+        if (err) throw err;
+        const employeeArr = results.map(employee => {
             return {
-                name: `${employee.first_name} ${employee.last_name}`,
+                name: employee.first_name + ' ' + employee.last_name,
                 value: employee.id,
             }
         })
-        // Adds the option to select 'none'
+        // Adds the option to select 'none' as manager
         employeeArr.unshift(
             {
                 value: null,
@@ -138,11 +141,11 @@ function addEmployee() {
             },
         ]).then((response) => {
             const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
-            VALUES (?, ?, (SELECT id FROM roles WHERE title = ?), ?)`
+            VALUES (?, ?, ?, ?)`
             
-            db.query(sql, [response.firstName, response.lastName, response.newRole, response.newManager],function (err, data) {
+            db.query(sql, [response.firstName, response.lastName, response.newRole, response.newManager], function (err, data) {
                 if (err) throw err;
-                console.log(`${firstName} ${lastName} has been added to the database!`);
+                console.log(`${response.firstName} ${response.lastName} has been added to the database!`);
                 start();
             })
         })
@@ -189,8 +192,7 @@ function updateEmployeeRole() {
                 WHERE id = ?`;
                 
                 db.query(sql, [response.newRole, response.employee],function (err, data) {
-                    if (err) throw err;
-                    console.log(`${employee}'s role has been added to ${newRole}`);
+                    console.log(`Role has been successfully updated!`);
                     start();
                 })
             })
@@ -207,7 +209,7 @@ function viewAllRoles() {
     sql = `SELECT
             roles.title,
             roles.id,
-            departments.name,
+            departments.name AS "department",
             roles.salary
         FROM roles
         LEFT JOIN departments
@@ -223,6 +225,7 @@ function viewAllRoles() {
 // THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 function addRole() {
     db.query('SELECT * FROM departments', function (err, results) {
+        if (err) throw err;
         const departmentArr = results.map((department) => {
             return {
                 name: department.name,
@@ -253,7 +256,7 @@ function addRole() {
             
             db.query(sql, [answer.name, answer.salary, answer.department], function (err, data) {
                 if (err) throw err;
-                console.log(`The role of ${name} has been added to ${department}`);
+                console.log(`The role of ${answer.name} has been successfully added!`);
                 start();
             })
         })
@@ -289,7 +292,8 @@ function addDepartment() {
 
         db.query(sql, answer.department, function(err, data) {
             if (err) throw err;
-            console.log(`${department} has been added to departments`)
+            console.log(`${answer.department} has been added to departments`);
+            start();
         })
     })
 }
