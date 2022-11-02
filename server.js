@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+const cTable = require('console.table');
 
 const db = mysql.createConnection(
     {
@@ -83,7 +84,9 @@ function viewAllEmployees() {
 
     db.query(sql, function (err, data) {
         if (err) throw err;
+        console.log('\n');
         console.table(data);
+        console.log('\n');
         start();
     })
 }
@@ -91,8 +94,8 @@ function viewAllEmployees() {
 //  THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 function viewAllRoles() {
     const sql = `SELECT
-            roles.title,
             roles.id,
+            roles.title,
             departments.name AS "department",
             roles.salary
         FROM roles
@@ -101,7 +104,9 @@ function viewAllRoles() {
 
     db.query(sql, function (err, data) {
         if (err) throw err;
+        console.log('\n');
         console.table(data);
+        console.log('\n');
         start();
     })
 }
@@ -112,7 +117,9 @@ function viewAllDeparments() {
 
     db.query(sql, function (err, data) {
         if (err) throw err;
+        console.log('\n');
         console.table(data);
+        console.log('\n');
         start();
     })
 }
@@ -154,7 +161,9 @@ function updateEmployeeRole() {
                 WHERE id = ?`;
                 
                 db.query(sql, [response.newRole, response.employee],function (err, data) {
+                    console.log('\n');
                     console.log(`Role has been successfully updated!`);
+                    console.log('\n');
                     start();
                 })
             })
@@ -218,7 +227,9 @@ function addEmployee() {
             
             db.query(sql, [response.firstName, response.lastName, response.newRole, response.newManager], function (err, data) {
                 if (err) throw err;
+                console.log('\n');
                 console.log(`${response.firstName} ${response.lastName} has been added to the database!`);
+                console.log('\n');
                 start();
             })
         })
@@ -262,7 +273,9 @@ function addRole() {
             
             db.query(sql, [answer.name, answer.salary, answer.department], function (err, data) {
                 if (err) throw err;
+                console.log('\n');
                 console.log(`The role of ${answer.name} has been successfully added!`);
+                console.log('\n');
                 start();
             })
         })
@@ -283,7 +296,9 @@ function addDepartment() {
 
         db.query(sql, answer.department, function(err, data) {
             if (err) throw err;
+            console.log('\n');
             console.log(`${answer.department} has been added to departments`);
+            console.log('\n');
             start();
         })
     })
@@ -308,7 +323,9 @@ function deleteEmployee() {
         ]).then(response => {
             db.query(`DELETE FROM employees WHERE id = ?`, response.employee, function(err, data) {
                 if (err) throw err;
+                console.log('\n');
                 console.log("Employee has been successfully deleted");
+                console.log('\n');
                 start();
             })
         })
@@ -335,7 +352,9 @@ function deleteRole() {
         ]).then(response => {
             db.query(`DELETE FROM roles WHERE id = ?`, response.role, function(err, data) {
                 if (err) throw err;
+                console.log('\n');
                 console.log("Role has been successfully deleted");
+                console.log('\n');
                 start();
             })
         })
@@ -362,7 +381,9 @@ function deleteDepartment() {
         ]).then(response => {
             db.query(`DELETE FROM departments WHERE id = ?`, response.department, function(err, data) {
                 if (err) throw err;
+                console.log('\n');
                 console.log("Department has been successfully deleted");
+                console.log('\n');
                 start();
             })
         })
@@ -379,12 +400,16 @@ function viewBudget() {
     
     db.query(sql, function(err, data) {
         if (err) throw err;
+        console.log('\n');
         console.table(data);
+        console.log('\n');
         start();
     })
 }
 
 function quit() {
+    console.log('\n');
     console.log("See you later!")
+    console.log('\n');
     db.end()
 }
