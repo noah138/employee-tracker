@@ -32,7 +32,7 @@ function start() {
             'Delete Role',
             'View All Departments',
             'Add Department',
-            // 'Delete Department',
+            'Delete Department',
             // 'Quit'
         ]
     }).then((answer) => {
@@ -56,8 +56,8 @@ function start() {
                 return viewAllDeparments();
             case 'Add Department':
                 return addDepartment();
-            // case 'Delete Department':
-            //     return deleteDepartment();
+            case 'Delete Department':
+                return deleteDepartment();
             // case 'Quit':
             //     return quit();
         }
@@ -200,32 +200,6 @@ function updateEmployeeRole() {
     })
 }
 
-function deleteEmployee() {
-    db.query('SELECT * FROM employees', function (err, results) {
-        const employeeArr = results.map((employee) => {
-            return {
-                name: `${employee.first_name} ${employee.last_name}`,
-                value: employee.id,
-            }
-        })
-    
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: 'employee',
-                message: `Which employee needs to be removed?`,
-                choices: employeeArr
-            }
-        ]).then(response => {
-            db.query(`DELETE FROM employees WHERE id = ?`, response.employee, function(err, data) {
-                if (err) throw err;
-                console.log("Employee has been successfully deleted");
-                start();
-            })
-        })
-    })
-}
-
 //  THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 function viewAllRoles() {
     sql = `SELECT
@@ -285,33 +259,6 @@ function addRole() {
     })
 }
 
-function deleteRole() {
-    db.query('SELECT * FROM roles', function (err, results) {
-        if (err) throw err;
-        const roleArr = results.map((role) => {
-            return {
-                name: role.title,
-                value: role.id,
-            }
-        })
-    
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: 'role',
-                message: 'Which role needs to be removed?',
-                choices: roleArr
-            }
-        ]).then(response => {
-            db.query(`DELETE FROM roles WHERE id = ?`, response.role, function(err, data) {
-                if (err) throw err;
-                console.log("Role has been successfully deleted");
-                start();
-            })
-        })
-    })
-}
-
 // THEN I am presented with a formatted table showing department names and department ids
 function viewAllDeparments() {
     const sql = `SELECT * FROM departments`
@@ -343,9 +290,85 @@ function addDepartment() {
     })
 }
 
-// function deleteDepartment() {
+function deleteEmployee() {
+    db.query('SELECT * FROM employees', function (err, results) {
+        const employeeArr = results.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            }
+        })
+    
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: `Which employee needs to be removed?`,
+                choices: employeeArr
+            }
+        ]).then(response => {
+            db.query(`DELETE FROM employees WHERE id = ?`, response.employee, function(err, data) {
+                if (err) throw err;
+                console.log("Employee has been successfully deleted");
+                start();
+            })
+        })
+    })
+}
 
-// }
+function deleteRole() {
+    db.query('SELECT * FROM roles', function (err, results) {
+        if (err) throw err;
+        const roleArr = results.map((role) => {
+            return {
+                name: role.title,
+                value: role.id,
+            }
+        })
+    
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Which role needs to be removed?',
+                choices: roleArr
+            }
+        ]).then(response => {
+            db.query(`DELETE FROM roles WHERE id = ?`, response.role, function(err, data) {
+                if (err) throw err;
+                console.log("Role has been successfully deleted");
+                start();
+            })
+        })
+    })
+}
+
+function deleteDepartment() {
+    db.query('SELECT * FROM departments', function (err, results) {
+        if (err) throw err;
+        const departmentArr = results.map((department) => {
+            return {
+                name: department.name,
+                value: department.id,
+            }
+        })
+    
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Which department needs to be removed?',
+                choices: departmentArr
+            }
+        ]).then(response => {
+            db.query(`DELETE FROM departments WHERE id = ?`, response.department, function(err, data) {
+                if (err) throw err;
+                console.log("Department has been successfully deleted");
+                start();
+            })
+        })
+    })
+}
 
 // function quit() {
 
