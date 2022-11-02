@@ -1,4 +1,18 @@
 const inquirer = require("inquirer");
+const mysql = require("mysql2");
+
+const PORT = process.env.PORT || 3000;
+const app = require("express");
+
+const db = mysql.createConnection(
+    {
+        host: 'localhost',
+        user: 'root',
+        password: 'password',
+        database: 'employees_db'
+    },
+    console.log("Connected to the employee database")
+);
 
 start();
 
@@ -20,7 +34,7 @@ function start() {
             'Delete Department',
             'Quit'
         ]
-    }),then((answer) => {
+    }).then((answer) => {
         console.log(answer);
         switch (answer.task) {
             case 'View All Employees':
@@ -49,36 +63,71 @@ function start() {
     })
 }
 
-async function viewAllEmployees() {
+function viewAllEmployees() {
+    db.query('SELECT * FROM employees', function (err, data) {
+        console.table(data);
+        start();
+    })
+}
+
+function addEmployee() {
 
 }
-async function addEmployee() {
+
+function updateEmployeeRole() {
 
 }
-async function updateEmployeeRole() {
+
+function deleteEmployee() {
 
 }
-async function deleteEmployee() {
+
+function viewAllRoles() {
+    db.query('SELECT * FROM roles', function (err, data) {
+        console.table(data);
+        start();
+    })
+}
+
+function addRole() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'role',
+            message: 'What role would you like to add?'
+        }
+    ]).then((answer) => {
+
+    })
+}
+
+function deleteRole() {
 
 }
-async function viewAllRoles() {
+
+function viewAllDeparments() {
+    db.query('SELECT * FROM departments', function (err, data) {
+        console.table(data);
+        start();
+    })
+}
+
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'department',
+            message: 'What is the department name?'
+        }
+    ]).then((answer) => {
+        db.query(`INSERT INTO departments`)
+    })
+}
+
+function deleteDepartment() {
 
 }
-async function addRole() {
 
-}
-async function deleteRole() {
-
-}
-async function viewAllDeparments() {
-
-}
-async function addDepartment() {
-
-}
-async function deleteDepartment() {
-
-}
-async function quit() {
+function quit() {
 
 }
