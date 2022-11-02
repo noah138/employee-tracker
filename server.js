@@ -25,14 +25,14 @@ function start() {
             'View All Employees',
             'Add Employee',
             'Update Employee Role',
-            'Delete Employee',
+            // 'Delete Employee',
             'View All Roles',
             'Add Role',
-            'Delete Role',
+            // 'Delete Role',
             'View All Departments',
             'Add Department',
-            'Delete Department',
-            'Quit'
+            // 'Delete Department',
+            // 'Quit'
         ]
     }).then((answer) => {
         console.log(answer);
@@ -43,22 +43,22 @@ function start() {
                 return addEmployee();
             case 'Update Employee Role':
                 return updateEmployeeRole();
-            case 'Delete Employee':
-                return deleteEmployee();
+            // case 'Delete Employee':
+            //     return deleteEmployee();
             case 'View All Roles':
                 return viewAllRoles();
             case 'Add Role':
                 return addRole();
-            case 'Delete Role':
-                return deleteRole();
+            // case 'Delete Role':
+            //     return deleteRole();
             case 'View All Departments':
                 return viewAllDeparments();
             case 'Add Department':
                 return addDepartment();
-            case 'Delete Department':
-                return deleteDepartment();
-            case 'Quit':
-                return quit();
+            // case 'Delete Department':
+            //     return deleteDepartment();
+            // case 'Quit':
+            //     return quit();
         }
     })
 }
@@ -140,7 +140,7 @@ function addEmployee() {
             const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
             VALUES (?, ?, (SELECT id FROM roles WHERE title = ?), ?)`
             
-            db.query(sql, [firstName, lastName, newRole, newManager],function (err, data) {
+            db.query(sql, [response.firstName, response.lastName, response.newRole, response.newManager],function (err, data) {
                 if (err) throw err;
                 console.log(`${firstName} ${lastName} has been added to the database!`);
                 start();
@@ -154,7 +154,48 @@ function addEmployee() {
 
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 function updateEmployeeRole() {
+    db.query('SELECT * FROM employees', function (err, results) {
+        const employeeArr = results.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            }
+        })
 
+        db.query('SELECT * FROM roles', function (err, results) {
+            const roleArr = results.map((role) => {
+                return {
+                    name: role.title,
+                    value: role.id,
+                }
+            })
+        
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: `Which employee's role needs to be updated?`,
+                    choices: employeeArr
+                },
+                {
+                    type: 'list',
+                    name: 'newRole',
+                    message: `What is the employee's new role?`,
+                    choices: roleArr
+                },               
+            ]).then((response) => {
+                const sql = `UPDATE employees
+                SET role_id = ?
+                WHERE id = ?`;
+                
+                db.query(sql, [response.newRole, response.employee],function (err, data) {
+                    if (err) throw err;
+                    console.log(`${employee}'s role has been added to ${newRole}`);
+                    start();
+                })
+            })
+        })
+    })
 }
 
 // function deleteEmployee() {
@@ -181,14 +222,41 @@ function viewAllRoles() {
 
 // THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
 function addRole() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'role',
-            message: 'What role would you like to add?'
-        }
-    ]).then((answer) => {
-
+    db.query('SELECT * FROM departments', function (err, results) {
+        const departmentArr = results.map((department) => {
+            return {
+                name: department.name,
+                value: department.id,
+            }
+        })
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'name',
+                message: 'What is the name of the new role?'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'What is the salary of the new role?'
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Which department does the role belong to?',
+                choices: departmentArr
+            }
+        ]).then((answer) => {
+            const sql = `INSERT INTO roles
+            (title, salary, department_id)
+            VALUES (?, ?, ?)`;
+            
+            db.query(sql, [answer.name, answer.salary, answer.department], function (err, data) {
+                if (err) throw err;
+                console.log(`The role of ${name} has been added to ${department}`);
+                start();
+            })
+        })
     })
 }
 
@@ -216,7 +284,13 @@ function addDepartment() {
             message: 'What is the department name?'
         }
     ]).then((answer) => {
-        db.query(`INSERT INTO departments`)
+        sql = `INSERT INTO departments (name)
+        VALUES (?)`;
+
+        db.query(sql, answer.department, function(err, data) {
+            if (err) throw err;
+            console.log(`${department} has been added to departments`)
+        })
     })
 }
 
@@ -224,6 +298,6 @@ function addDepartment() {
 
 // }
 
-function quit() {
+// function quit() {
 
-}
+// }
