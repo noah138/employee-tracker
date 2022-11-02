@@ -29,7 +29,7 @@ function start() {
             'Delete Employee',
             'View All Roles',
             'Add Role',
-            // 'Delete Role',
+            'Delete Role',
             'View All Departments',
             'Add Department',
             // 'Delete Department',
@@ -50,8 +50,8 @@ function start() {
                 return viewAllRoles();
             case 'Add Role':
                 return addRole();
-            // case 'Delete Role':
-            //     return deleteRole();
+            case 'Delete Role':
+                return deleteRole();
             case 'View All Departments':
                 return viewAllDeparments();
             case 'Add Department':
@@ -285,9 +285,32 @@ function addRole() {
     })
 }
 
-// function deleteRole() {
-
-// }
+function deleteRole() {
+    db.query('SELECT * FROM roles', function (err, results) {
+        if (err) throw err;
+        const roleArr = results.map((role) => {
+            return {
+                name: role.title,
+                value: role.id,
+            }
+        })
+    
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Which role needs to be removed?',
+                choices: roleArr
+            }
+        ]).then(response => {
+            db.query(`DELETE FROM roles WHERE id = ?`, response.role, function(err, data) {
+                if (err) throw err;
+                console.log("Role has been successfully deleted");
+                start();
+            })
+        })
+    })
+}
 
 // THEN I am presented with a formatted table showing department names and department ids
 function viewAllDeparments() {
