@@ -26,7 +26,7 @@ function start() {
             'View All Employees',
             'Add Employee',
             'Update Employee Role',
-            // 'Delete Employee',
+            'Delete Employee',
             'View All Roles',
             'Add Role',
             // 'Delete Role',
@@ -44,8 +44,8 @@ function start() {
                 return addEmployee();
             case 'Update Employee Role':
                 return updateEmployeeRole();
-            // case 'Delete Employee':
-            //     return deleteEmployee();
+            case 'Delete Employee':
+                return deleteEmployee();
             case 'View All Roles':
                 return viewAllRoles();
             case 'Add Role':
@@ -200,9 +200,31 @@ function updateEmployeeRole() {
     })
 }
 
-// function deleteEmployee() {
-
-// }
+function deleteEmployee() {
+    db.query('SELECT * FROM employees', function (err, results) {
+        const employeeArr = results.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            }
+        })
+    
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: `Which employee needs to be removed?`,
+                choices: employeeArr
+            }
+        ]).then(response => {
+            db.query(`DELETE FROM employees WHERE id = ?`, response.employee, function(err, data) {
+                if (err) throw err;
+                console.log("Employee has been successfully deleted");
+                start();
+            })
+        })
+    })
+}
 
 //  THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 function viewAllRoles() {
