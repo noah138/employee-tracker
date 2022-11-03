@@ -2,7 +2,7 @@
 
 ## Description
 
-The aim of this project was to build a command-line application to manage a company's employee datasebase using Node.js, Inquirer, and MySQL. This application allows users to add, view, or delete departments, roles, or employees. Users are also able to update employee roles and view the total budget of different departments.
+The aim of this project was to build a command-line application to manage a company's employee database using Node.js, Inquirer, and MySQL. This application allows users to add, view, or delete departments, roles, or employees. Users are also able to update employee roles and view the total budget of different departments.
 
 Below is an example of what the application looks like in use:
 
